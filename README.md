@@ -47,3 +47,10 @@ FinSage-NLP-Module/
 │   └── 03_clasificacion.py  # Vectorización y clasificación Zero-Shot
 ├── requirements.txt         # Dependencias del entorno de ejecución
 └── README.md                # Documentación del módulo  
+
+```
+---
+## Columna,Qué buscar para saber si está bien
+Category,Que el tema de la noticia coincida lógicamente con la etiqueta asignada.
+Score,Que las noticias muy claras tengan números altos (cercanos a 1) y las confusas tengan números bajos.
+Title_clean,Que el texto no tenga basura (URLs o símbolos raros) pero mantenga las palabras completas.
