@@ -53,13 +53,13 @@ FinSage-NLP-Module/
 ## Categoria y Score ¿Qué esperamos?
 * Category: Es el tema de la noticia coincida lógicamente con la etiqueta asignada.
 
-*** Macroeconomics: El modelo evalúa si el titular "implica" el concepto de macroeconomía. Relacionará automáticamente términos como Federal Reserve, Inflation, Interest Rates, GDP o Central Banks con esta categoría, porque en su entrenamiento previo aprendió que esos conceptos pertenecen al campo de la economía global.
+Macroeconomics: El modelo evalúa si el titular "implica" el concepto de macroeconomía. Relacionará automáticamente términos como Federal Reserve, Inflation, Interest Rates, GDP o Central Banks con esta categoría, porque en su entrenamiento previo aprendió que esos conceptos pertenecen al campo de la economía global.
 
-*** Earnings Report: Buscará la relación semántica con el desempeño financiero de las empresas. Palabras como Quarterly results, Revenue, Profits, EPS, Fiscal year o Crashed/Soared after reporting activarán esta categoría.
+Earnings Report: Buscará la relación semántica con el desempeño financiero de las empresas. Palabras como Quarterly results, Revenue, Profits, EPS, Fiscal year o Crashed/Soared after reporting activarán esta categoría.
 
-*** Stock Volatility: Se activará con noticias que describen movimientos bruscos o incertidumbre en el mercado. Términos como Market plunge, Rally, Sell-off, Uncertainty, Bulls/Bears o Fluctuations tendrán un alto relacionamiento aquí.
+Stock Volatility: Se activará con noticias que describen movimientos bruscos o incertidumbre en el mercado. Términos como Market plunge, Rally, Sell-off, Uncertainty, Bulls/Bears o Fluctuations tendrán un alto relacionamiento aquí.
 
-*** Corporate Mergers: El modelo detectará la relación entre empresas. Términos como Acquisition, Buyout, Merger, Agreement to buy o Hostile takeover son los que dispararán esta clasificación.
+Corporate Mergers: El modelo detectará la relación entre empresas. Términos como Acquisition, Buyout, Merger, Agreement to buy o Hostile takeover son los que dispararán esta clasificación.
 
 * Score: Que las noticias muy claras tengan números altos (cercanos a 1) y las confusas tengan números bajos.
 * Title_clean: Que el texto no tenga basura (URLs o símbolos raros) pero mantenga las palabras completas.
