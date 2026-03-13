@@ -6,207 +6,44 @@ Este proyecto tiene como objetivo **mejorar la precisión predictiva y la rentab
 
 Para ello se recolectarán titulares desde Google News mediante técnicas de **web scraping**, y posteriormente se aplicarán técnicas de **Procesamiento de Lenguaje Natural (NLP)** para transformar información textual en **señales cuantitativas de sentimiento de mercado**.
 
-A diferencia de enfoques tradicionales que solo clasifican noticias como **positivas, negativas o neutrales**, este proyecto propone generar un **score continuo de sentimiento** utilizando **FinBERT**, un modelo de lenguaje entrenado específicamente con textos financieros.
+## Metodología del Módulo
 
-Este score permitirá construir un **índice de sentimiento del mercado** que posteriormente será analizado en relación con el comportamiento del S&P 500.
+### 1. Ingesta de Base de Datos
+El sistema ingesta los datos desde un archivo tabular estático (`noticias_exportadas.csv`) que contiene los titulares financieros previamente extraídos. Esta etapa asegura que los textos se carguen correctamente, manejando delimitadores específicos y valores nulos antes de pasar al motor de procesamiento.
 
----
+### 2. Preprocesamiento de Texto (WordPiece Friendly)
+A diferencia de los pipelines tradicionales de NLP, este módulo omite intencionalmente técnicas destructivas como la lematización, el *stemming* o la eliminación de *stopwords*. 
 
-# Objetivos
+La limpieza se restringe a:
+* Eliminación de URLs y código residual.
+* Estandarización de espacios y eliminación de caracteres no semánticos.
+* Conservación intacta de la gramática, puntuación y conectores.
 
-## Objetivo general
+Esta decisión metodológica asegura que el tokenizador **WordPiece** nativo de FinBERT reciba el contexto sintáctico completo y bidireccional necesario para no perder la intención original de las oraciones financieras.
 
-Desarrollar un modelo basado en técnicas de procesamiento de lenguaje natural que permita extraer señales de sentimiento del mercado a partir de titulares de noticias financieras relacionadas con el S&P 500.
+### 3. Validación NER y Expansión de Vocabulario
+Para abordar el problema de palabras fuera de vocabulario (OOV) en un dominio altamente especializado, se implementa un modelo de Reconocimiento de Entidades Nombradas (NER) a través de `spaCy`. 
+* Se identifican organizaciones, empresas y productos financieros en el texto limpio.
+* Se valida si el tokenizador de FinBERT reconoce la palabra completa o si la fragmenta en sub-palabras.
+* Los términos desconocidos se añaden dinámicamente al vocabulario del modelo y se redimensiona su matriz de *embeddings* para preservar la integridad de conceptos clave (ej. *tickers* bursátiles o nombres propios de empresas).
 
-## Objetivos específicos
-
-* Recolectar titulares de noticias financieras mediante web scraping desde Google News.
-* Realizar limpieza y preprocesamiento del texto.
-* Aplicar modelos avanzados de NLP entrenados en lenguaje financiero.
-* Generar un **score continuo de sentimiento** para cada noticia.
-* Construir un **índice de sentimiento del mercado** agregando noticias diarias.
-* Analizar la relación entre el sentimiento extraído y el comportamiento del S&P 500.
-* Evaluar el potencial del sentimiento como señal para estrategias de inversión.
-
----
-
-# Metodología
-
-El proyecto sigue un pipeline de procesamiento de datos basado en técnicas modernas de NLP:
-
-Recolección de datos → Preprocesamiento de texto → Análisis de sentimiento con FinBERT → Generación de score → Construcción del índice de sentimiento → Evaluación frente al mercado
+### 4. Clasificación Enriquecida (Zero-Shot & Sentence Transformers)
+Para proporcionar un contexto de mayor valor a la arquitectura de agentes predictivos de FinSage, se descarta la clasificación de sentimiento de tres clases. En su lugar, se utilizan **Sentence Transformers** para vectorizar los titulares y un modelo de **Zero-Shot Classification** para categorizar las noticias en temáticas de dominio específico definidas por el investigador (ej. Fusiones y Adquisiciones, Reportes de Ganancias, Macroeconomía).
 
 ---
 
-# 1. Recolección de datos
+## Estructura del Repositorio
 
-Los datos serán recolectados mediante **web scraping de titulares de noticias financieras desde Google News**.
+La arquitectura de carpetas refleja exclusivamente las fases de limpieza y modelado correspondientes a este entregable:
 
-Cada registro incluirá:
-
-* fecha de publicación
-* titular de la noticia
-* fuente
-* enlace de la noticia
-
-Los datos recolectados se almacenarán inicialmente en formato **CSV** para su posterior procesamiento.
-
----
-
-# 2. Preprocesamiento del texto
-
-Antes de aplicar modelos de NLP, los textos serán limpiados y normalizados.
-
-El proceso incluye:
-
-* Conversión a minúsculas
-* Eliminación de caracteres especiales
-* Eliminación de stopwords
-* Tokenización
-* Lematización
-* Normalización del texto
-
-Este paso permite preparar los textos para su análisis mediante modelos de lenguaje.
-
----
-
-# 3. Análisis de sentimiento con FinBERT
-
-Para capturar correctamente el contexto financiero de las noticias se utilizará **FinBERT**, un modelo basado en la arquitectura BERT entrenado específicamente con textos financieros.
-
-FinBERT permite identificar el sentimiento de un texto en tres categorías:
-
-* Positivo
-* Neutral
-* Negativo
-
-En lugar de utilizar directamente estas clases, se construirá un **score continuo de sentimiento**.
-
----
-
-# 4. Construcción del Score de Sentimiento
-
-El modelo generará probabilidades para cada clase de sentimiento. A partir de estas probabilidades se calculará un **score de impacto del mercado**:
-
-Score = Probabilidad(Positivo) − Probabilidad(Negativo)
-
-Este score tendrá un rango aproximado entre:
-
-* **-1 → Sentimiento muy negativo**
-* **0 → Sentimiento neutral**
-* **+1 → Sentimiento muy positivo**
-
-Esto permite representar el impacto potencial de cada noticia en el mercado de forma cuantitativa.
-
----
-
-# 5. Construcción del Índice de Sentimiento del Mercado
-
-Los scores individuales de las noticias serán agregados para construir un **Market Sentiment Index**.
-
-Por ejemplo, calculando el promedio diario:
-
-Sentiment_Index_día = Promedio(score_noticias_día)
-
-Este índice permitirá analizar si el sentimiento agregado del mercado tiene relación con el comportamiento del S&P 500.
-
----
-
-# 6. Evaluación del Modelo
-
-El índice de sentimiento será comparado con datos históricos del mercado para evaluar su utilidad como señal predictiva.
-
-Se analizarán aspectos como:
-
-* correlación entre sentimiento y retornos del mercado
-* capacidad predictiva en modelos de regresión
-* comportamiento de estrategias de inversión basadas en sentimiento
-
----
-
-# Estructura del repositorio
-
-El proyecto sigue una estructura modular diseñada para facilitar el trabajo colaborativo y la reproducibilidad del análisis.
-
-```
-Seminario-FinSage
-│
-├── data
-│   ├── raw                # Datos originales recolectados mediante scraping
-│   ├── processed          # Datos limpios y preparados para el modelo
-│
-├── notebooks
-│   ├── 01_scraping.ipynb
-│   ├── 02_preprocessing.ipynb
-│   ├── 03_feature_engineering.ipynb
-│   ├── 04_finbert_sentiment.ipynb
-│
-├── src
-│   ├── scraping.py           # Recolección de noticias
-│   ├── preprocessing.py      # Limpieza y normalización de texto
-│   ├── features.py           # Transformación de texto (TF-IDF / N-grams)
-│   ├── finbert_model.py      # Implementación del modelo FinBERT
-│   ├── sentiment_index.py    # Construcción del índice de sentimiento
-│   ├── model.py              # Modelos de análisis del impacto en el mercado
-│
-├── results
-│   ├── models                # Modelos entrenados
-│   ├── figures               # Gráficos y visualizaciones
-│
-├── requirements.txt          # Dependencias del proyecto
-├── README.md                 # Documentación del proyecto
-└── .gitignore
-```
-
----
-
-# Tecnologías utilizadas
-
-El proyecto se desarrollará utilizando las siguientes herramientas:
-
-* Python
-* Pandas
-* NumPy
-* Scikit-learn
-* Transformers (HuggingFace)
-* PyTorch
-* BeautifulSoup
-* Requests
-* NLTK / SpaCy
-* Matplotlib
-* Seaborn
-* Jupyter Notebook
-
----
-
-# Trabajo colaborativo
-
-El proyecto será desarrollado utilizando control de versiones con Git.
-
-Se recomienda trabajar mediante **ramas de desarrollo**, por ejemplo:
-
-* scraping
-* preprocessing
-* sentiment-model
-* sentiment-index
-* modeling
-
-Los cambios serán integrados mediante **Pull Requests** para mantener un flujo de trabajo ordenado.
-
----
-
-# Trabajo futuro
-
-Posibles extensiones del proyecto incluyen:
-
-* Incorporación de más fuentes de noticias financieras
-* Análisis de temas mediante Topic Modeling
-* Incorporación de pesos de relevancia de noticias
-* Construcción de un indicador avanzado de **News Impact Score**
-* Evaluación de estrategias de trading basadas en señales de sentimiento
-
----
-
-# Autores
-
-Proyecto desarrollado como parte del seminario de Inteligencia Artificial aplicado a Finanzas.
+```text
+FinSage-NLP-Module/
+├── data/
+│   ├── raw/                 # Base de datos original (noticias_exportadas.csv)
+│   └── processed/           # Datos procesados, limpios y listos para inferencia
+├── src/
+│   ├── 01_limpieza.py       # Algoritmos de limpieza estructural (sin lematización)
+│   ├── 02_vocab_ner.py      # Extracción de entidades y actualización de tokenizador
+│   └── 03_clasificacion.py  # Vectorización y clasificación Zero-Shot
+├── requirements.txt         # Dependencias del entorno de ejecución
+└── README.md                # Documentación del módulo  
