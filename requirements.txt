@@ -1,12 +1,5 @@
-pandas
-numpy
-scikit-learn
-beautifulsoup4
-requests
-nltk
-spacy
-matplotlib
-seaborn
-transformers
-torch
-jupyter
+pandas>=2.0.0
+spacy>=3.7.0
+transformers>=4.35.0
+sentence-transformers>=2.2.2
+torch>=2.1.0
