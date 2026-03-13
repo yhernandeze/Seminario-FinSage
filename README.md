@@ -11,7 +11,7 @@ Para ello se recolectarán titulares desde Google News mediante técnicas de **w
 ### 1. Ingesta de Base de Datos
 El sistema ingesta los datos desde un archivo tabular estático (`noticias_exportadas.csv`) que contiene los titulares financieros previamente extraídos. Esta etapa asegura que los textos se carguen correctamente, manejando delimitadores específicos y valores nulos antes de pasar al motor de procesamiento.
 
-### 2. Preprocesamiento de Texto (WordPiece Friendly)
+### 2. Preprocesamiento de Texto
 A diferencia de los pipelines tradicionales de NLP, este módulo omite intencionalmente técnicas destructivas como la lematización, el *stemming* o la eliminación de *stopwords*. 
 
 La limpieza se restringe a:
