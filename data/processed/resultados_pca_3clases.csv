@@ -1,0 +1,4 @@
+modelo,accuracy,f1_macro,precision,recall
+Random Forest [VAL],0.419,0.3619,0.3614,0.3651
+MLP [VAL],0.4762,0.3334,0.3064,0.3704
+XGBoost [VAL],0.4429,0.3,0.2813,0.3401
