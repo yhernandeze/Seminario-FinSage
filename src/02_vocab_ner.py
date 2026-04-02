@@ -1,36 +1,45 @@
 import pandas as pd
-import spacy
 import os
-from transformers import AutoTokenizer, AutoModel
+import spacy
 
+# Configuración de rutas
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INPUT_PATH = os.path.join(BASE_DIR, 'data', 'processed', 'noticias_limpias.csv')
+OUTPUT_PATH = os.path.join(BASE_DIR, 'data', 'processed', 'noticias_enriquecidas.csv')
 
-def ejecutar_ner():
+def ejecutar_ner_ligero():
     if not os.path.exists(INPUT_PATH):
-        print("Error: Ejecute primero el script de limpieza.")
+        print("Error: No se encontró noticias_limpias.csv")
         return
 
+    print("Cargando modelo de lenguaje simplificado...")
+    # Cargamos el modelo
+    try:
+        nlp = spacy.load("en_core_web_sm", disable=["parser", "projects"])
+    except:
+        print("Descargando modelo necesario...")
+        os.system("python3 -m spacy download en_core_web_sm")
+        nlp = spacy.load("en_core_web_sm")
+
     df = pd.read_csv(INPUT_PATH)
-    nlp = spacy.load("en_core_web_sm")
-    tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
-    model = AutoModel.from_pretrained("ProsusAI/finbert")
+    
+    # Procesamos solo una muestra de 300 para tu validación
+    df_muestra = df.copy()
+    
+    print("Extrayendo entidades (NER) de forma secuencial...")
+    
+    def extraer_entidades(texto):
+        doc = nlp(str(texto))
+        # Solo extraemos 
+        entidades = [ent.text for ent in doc.ents if ent.label_ == "ORG"]
+        return ", ".join(entidades) if entidades else "None"
 
-    entidades = set()
-    for texto in df['title_clean'].dropna():
-        doc = nlp(texto)
-        for ent in doc.ents:
-            if ent.label_ in ['ORG', 'PRODUCT', 'MONEY']:
-                entidades.add(ent.text)
+    # Aplicamos fila por fila sin usar hilos paralelos (evita el error de mutex)
+    df_muestra['entidades_org'] = df_muestra['title_clean'].apply(extraer_entidades)
 
-    nuevos_tokens = [e for e in entidades if len(tokenizer.tokenize(e)) > 1]
-
-    if nuevos_tokens:
-        tokenizer.add_tokens(nuevos_tokens)
-        model.resize_token_embeddings(len(tokenizer))
-        print(f"Vocabulario actualizado con {len(nuevos_tokens)} nuevos términos.")
-    else:
-        print("El modelo ya conoce todas las entidades detectadas.")
+    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+    df_muestra.to_csv(OUTPUT_PATH, index=False)
+    print(f"Completado con éxito. Archivo en: {OUTPUT_PATH}")
 
 if __name__ == "__main__":
-    ejecutar_ner()
+    ejecutar_ner_ligero()
